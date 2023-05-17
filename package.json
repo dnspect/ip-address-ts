@@ -23,6 +23,7 @@
   "scripts": {
     "test": "mocha",
     "compile": "tsc -b",
+    "build": "tsc -d",
     "lint": "eslint src/**/**.{ts,tsx}",
     "lint:fix": "eslint src/**/**.{ts,tsx} --fix"
   },
@@ -41,5 +42,5 @@
   "bugs": {
     "url": "https://github.com/dnspect/ip-address-ts/issues"
   },
-  "homepage": "https://github.com/dnspect/ip-address-ts#readme"
+  "homepage": "https://github.com/dnspect/ip-address-ts"
 }
