@@ -1,0 +1,45 @@
+{
+  "name": "@dnspect/ip-address-ts",
+  "version": "0.1.0",
+  "description": "IP addresses library in TypeScript",
+  "author": "Minghang Chen <chen@minghang.dev> (https://minghang.dev)",
+  "license": "MIT",
+  "type": "module",
+  "types": "./dist/index.d.ts",
+  "main": "./dist/index.js",
+  "devDependencies": {
+    "@types/chai": "4.3",
+    "@types/mocha": "10.0",
+    "@types/node": "18",
+    "@typescript-eslint/eslint-plugin": "5.48",
+    "@typescript-eslint/parser": "5.48",
+    "chai": "4.3",
+    "chai-bytes": "0.1.2",
+    "eslint": "8",
+    "mocha": "10.2",
+    "ts-node": "10.9",
+    "typescript": "4.9"
+  },
+  "scripts": {
+    "test": "mocha",
+    "compile": "tsc -b",
+    "lint": "eslint src/**/**.{ts,tsx}",
+    "lint:fix": "eslint src/**/**.{ts,tsx} --fix"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dnspect/ip-address-ts.git"
+  },
+  "keywords": [
+    "ip",
+    "address",
+    "network prefix",
+    "cidr",
+    "ipv4",
+    "ipv6"
+  ],
+  "bugs": {
+    "url": "https://github.com/dnspect/ip-address-ts/issues"
+  },
+  "homepage": "https://github.com/dnspect/ip-address-ts#readme"
+}
