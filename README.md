@@ -1,4 +1,8 @@
-# ip-address-ts
+# @dnspect/ip-address-ts
+
+[![npm](https://img.shields.io/npm/v/@dnspect/ip-address-ts.svg)](https://www.npmjs.com/package/@dnspect/ip-address-ts) &nbsp;
+[![Run npm tests](https://github.com/dnspect/ip-address-ts/actions/workflows/test.yml/badge.svg)](https://github.com/dnspect/ip-address-ts/actions/workflows/test.yml) &nbsp;
+[![Lint](https://github.com/dnspect/ip-address-ts/actions/workflows/lint.yml/badge.svg)](https://github.com/dnspect/ip-address-ts/actions/workflows/lint.yml) &nbsp;
 
 IP addresses library in TypeScript. It defines an `Address` interface with `Address4` and `Address6` implementations.
 
@@ -15,11 +19,15 @@ Building on the `Address` types, the package also defines `Prefix` representing 
 
 ## Install
 
+Add this package to your package.json by running this in the root of your project's directory:
+
 ```sh
 npm install @dnspect/ip-address-ts
 ```
 
 ## Usage
+
+This package is designed to have no dependency on specific JavaScript runtime.
 
 ```javascript
 import { Address4, Address6, Prefix } from "ip-address-ts";
