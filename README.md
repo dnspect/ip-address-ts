@@ -30,7 +30,7 @@ npm install @dnspect/ip-address-ts
 This package is designed to have no dependency on specific JavaScript runtime.
 
 ```javascript
-import { Address4, Address6, Prefix } from "ip-address-ts";
+import { Address4, Address6, Prefix } from "@dnspect/ip-address-ts";
 
 // Parses from text notation
 const loopback4 = Address4.parse("127.0.0.1");
