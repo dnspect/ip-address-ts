@@ -18,6 +18,11 @@ const BYTES_LEN = 4;
 const UNSPECIFIED = new Uint8Array([0, 0, 0, 0]);
 
 /**
+ * A special broadcast address of the zero network.
+ */
+const BROADCAST = new Uint8Array([255, 255, 255, 255]);
+
+/**
  * Regular pattern to match a valid IPv4 address string.
  */
 const RE_ADDRESS =
@@ -80,10 +85,6 @@ export class Address4 implements Address {
 
     bits(): number {
         return BITS;
-    }
-
-    isUnspecified(): boolean {
-        return util.compareNumberArray(this.octets, UNSPECIFIED);
     }
 
     /**
@@ -171,9 +172,7 @@ export class Address4 implements Address {
     }
 
     /**
-     * Returns a zero-padded base-2 string representation of the address.
-     *
-     * @returns
+     * @override
      */
     toBinaryString(): string {
         const c = [];
@@ -184,12 +183,125 @@ export class Address4 implements Address {
     }
 
     /**
+     * @override
+     */
+    isUnspecified(): boolean {
+        return util.compareNumberArray(this.octets, UNSPECIFIED);
+    }
+
+    /**
+     * @override
+     */
+    isLoopback(): boolean {
+        // Requirements for Internet Hosts -- Communication Layers (3.2.1.3 Addressing)
+        // https://datatracker.ietf.org/doc/html/rfc1122#section-3.2.1.3
+        return this.octets[0] === 127;
+    }
+
+    /**
+     * @override
+     */
+    isPrivate(): boolean {
+        // RFC 1918 allocates 10.0.0.0/8, 172.16.0.0/12, and 192.168.0.0/16 as
+        // private IPv4 address subnets.
+        return this.octets[0] === 10 ||
+            (this.octets[0] === 172 && (this.octets[1] & 0xF0) === 16) ||
+            (this.octets[0] === 192 && this.octets[1] === 168);
+    }
+
+    /**
+     * @override
+     */
+    isMulticast(): boolean {
+        // Host Extensions for IP Multicasting (4. HOST GROUP ADDRESSES)
+        // https://datatracker.ietf.org/doc/html/rfc1112#section-4
+        return (this.octets[0] & 0xF0) === 0xE0;
+    }
+
+    /**
+     * @override
+     */
+    isLinkLocalMulticast(): boolean {
+        // IPv4 Multicast Guidelines (4. Local Network Control Block (224.0.0/24))
+        // https://datatracker.ietf.org/doc/html/rfc5771#section-4
+        return this.octets[0] === 224 && this.octets[1] === 0 && this.octets[2] === 0;
+    }
+
+    /**
+     * @override
+     */
+    isInterfaceLocalMulticast(): boolean {
+        return false;
+    }
+
+    /**
+     * @override
+     */
+    isLinkLocalUnicast(): boolean {
+        // Dynamic Configuration of IPv4 Link-Local Addresses
+        // https://datatracker.ietf.org/doc/html/rfc3927#section-2.1
+        return this.octets[0] === 169 && this.octets[1] === 254;
+    }
+
+    /**
+     * @override
+     */
+    isGlobalUnicast(): boolean {
+        return !(
+            // "This network"
+            this.octets[0] === 0 ||
+            this.isUnspecified() ||
+            this.isLoopback() ||
+            this.isMulticast() ||
+            this.isLinkLocalUnicast() ||
+            this.isPrivate() ||
+            util.compareNumberArray(this.octets, BROADCAST)
+        );
+    }
+
+    /**
+     * @override
+     */
+    isDocumentation(): boolean {
+        // https://datatracker.ietf.org/doc/html/rfc5737#section-3
+        return (this.octets[0] === 192 && this.octets[1] === 0 && this.octets[2] === 2) ||
+            (this.octets[0] === 198 && this.octets[1] === 51 && this.octets[2] === 100) ||
+            (this.octets[0] === 203 && this.octets[1] === 0 && this.octets[2] === 113);
+    }
+
+    /**
+     * @override
+     */
+    isDiscard(): boolean {
+        return false;
+    }
+
+    /**
+     * @override
+     */
+    isGlobalReachable(): boolean {
+        return this.isGlobalUnicast() && !(
+            this.isDocumentation() ||
+            this.isDiscard() ||
+            this.isShared()
+        );
+    }
+
+    /**
+     * Returns true if this address is part of the Shared Address Space defined in
+     * RFC 6598 (100.64.0.0/10).
+     */
+    isShared(): boolean {
+        return this.octets[0] === 100 && ((this.octets[1] & 0xC0) === 0x40);
+    }
+
+    /**
      * Checks if the textual address is a valid IPv4 address.
      *
      * @param address
      * @returns
      */
-    static isValid(address: string): boolean {
+    static validate(address: string): boolean {
         try {
             Address4.parse(address);
             return true;
@@ -200,6 +312,8 @@ export class Address4 implements Address {
 
     /**
      * Parses a v4 address
+     *
+     * @throws AddressError
      */
     static parse(address: string): Address4 {
         if (!address.match(RE_ADDRESS)) {
@@ -215,6 +329,8 @@ export class Address4 implements Address {
      *
      * @param hex - a hex string to convert
      * @returns
+     *
+     * @throws AddressError
      */
     static fromHex(hex: string): Address4 {
         const bytes = new Uint8Array(BYTES_LEN);
@@ -256,6 +372,8 @@ export class Address4 implements Address {
      *
      * @param n - a number to convert
      * @returns
+     *
+     * @throws AddressError
      */
     static fromInteger(n: number): Address4 {
         if (n < 0 || n > 4294967295) {
@@ -275,6 +393,8 @@ export class Address4 implements Address {
      *
      * @param arpa - An in-addr.arpa. form ipv4 address
      * @returns
+     *
+     * @throws AddressError
      *
      * @example
      * const address = Address4.fromArpa("1.113.0.203.in-addr.arpa.");

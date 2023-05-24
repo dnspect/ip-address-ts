@@ -1,4 +1,3 @@
-
 import * as util from "./util";
 import { Address4 } from "./ipv4";
 import { AddressError } from "./error";
@@ -80,29 +79,6 @@ const SCOPE_MAP: { [value: number]: Scope | undefined } = {
     8: Scope.OrganizationLocal,
     14: Scope.Global,
     15: Scope.Reserved,
-} as const;
-
-/**
- * Represents IPv6 address types.
- *
- * @fixme create subnets as constant prefixes.
- */
-const TYPES: { [subnet: string]: string | undefined } = {
-    "::/0": "Default route", // https://en.wikipedia.org/wiki/Default_route
-    "::/128": "Unspecified address",
-    "::1/128": "Loopback address",
-    "::ffff:0:0/96": "IPv4-mapped address",
-    "::ffff:0:0:0/96": "IPv4 translated address",
-    "64:ff9b::/96": "IPv4/IPv6 translation", // https://datatracker.ietf.org/doc/html/rfc6052
-    "64:ff9b:1::/48": "IPv4/IPv6 translation", // https://datatracker.ietf.org/doc/html/rfc8215
-    "100::/64": "Discard prefix", // https://datatracker.ietf.org/doc/html/rfc6666
-    "2001:0000::/32": "Teredo tunneling", // https://datatracker.ietf.org/doc/html/rfc4680
-    "2001:20::/28": "ORCHIDv2", // https://datatracker.ietf.org/doc/html/rfc7343
-    "2001:db8::/32": "Addresses used in documentation and example source code", // https://datatracker.ietf.org/doc/html/rfc3849
-    "2002::/16": "The 6to4 addressing scheme (deprecated)", // https://datatracker.ietf.org/doc/html/rfc7526
-    "fc00::/7": "Unique local address", // https://datatracker.ietf.org/doc/html/rfc4193
-    "fe80::/10": "Link-local address",
-    "ff00::/8": "Multicast",
 } as const;
 
 /**
@@ -266,9 +242,7 @@ export class Address6 implements Address {
     }
 
     /**
-     * Returns the number of bits of the address.
-     *
-     * @returns
+     * @override
      */
     bits(): number {
         return BITS;
@@ -297,26 +271,7 @@ export class Address6 implements Address {
     }
 
     /**
-     * Returns the type of the address.
-     *
-     * @returns
-     */
-    getType(): string {
-        for (const subnet of Object.keys(TYPES)) {
-            const prefix = Prefix.parse(subnet);
-            if (prefix.contains(this)) {
-                return TYPES[subnet] as string;
-            }
-        }
-
-        return "Global";
-    }
-
-    /**
-     * Returns the reversed ip6.arpa form of the address.
-     *
-     * @param options
-     * @returns
+     * @override
      */
     toArpa(options?: util.ArpaOptions): string {
         const parts = new Array<string>(32);
@@ -334,9 +289,7 @@ export class Address6 implements Address {
     }
 
     /**
-     * Returns the complete form of the IPv6 address.
-     *
-     * @returns
+     * @override
      */
     toHex(): string {
         const groups = new Array<string>(FIELDS_LEN);
@@ -347,9 +300,7 @@ export class Address6 implements Address {
     }
 
     /**
-     * Returns the canonical text representation format of IPv6 addresses.
-     *
-     * @returns
+     * @override
      */
     toString(): string {
         if (this.normalized) {
@@ -360,36 +311,28 @@ export class Address6 implements Address {
     }
 
     /**
-     * Returns a reference to the underlying data.
-     *
-     * @returns
+     * @override
      */
     bytes(): Uint8Array {
         return this.octets;
     }
 
     /**
-     * Returns a clone of the underlying data.
-     *
-     * @returns
+     * @override
      */
     bytesCloned(): Uint8Array {
         return this.octets.slice();
     }
 
     /**
-     * Converts the underlying data to a 16-bits array.
-     *
-     * @returns
+     * @override
      */
     to16BitGroups(): Uint16Array {
         return util.uint8ArrayToUint16Array(this.octets);
     }
 
     /**
-     * Returns a zero-padded base-2 string representation of the address.
-     *
-     * @returns
+     * @override
      */
     toBinaryString(): string {
         return this.octets.reduce((str, v) => str + v.toString(2).padStart(8, '0'), '');
@@ -488,39 +431,104 @@ export class Address6 implements Address {
     }
 
     /**
-     * Returns true if the address is a unspecified address, false otherwise.
-     *
-     * @returns
+     * @override
      */
     isUnspecified(): boolean {
         return UNSPECIFIED.contains(this);
     }
 
     /**
-     * Returns true if the address is a link local address, false otherwise.
-     *
-     * @returns
-     */
-    isLinkLocal(): boolean {
-        return LINK_LOCAL_PREFIX.contains(this);
-    }
-
-    /**
-     * Returns true if the address is a multicast address, false otherwise
-     *
-     * @returns {boolean}
-     */
-    isMulticast(): boolean {
-        return MULTICAST_PREFIX.contains(this);
-    }
-
-    /**
-     * Returns true if the address is a loopback address, false otherwise
-     *
-     * @returns {boolean}
+     * @override
      */
     isLoopback(): boolean {
         return LOOPBACK_PREFIX.contains(this);
+    }
+
+    /**
+     * @override
+     */
+    isPrivate(): boolean {
+        // RFC 4193 allocates fc00::/7 as the unique local unicast IPv6 address
+        // subnet.
+        return (this.octets[0] & 0xFE) === 0xFC;
+    }
+
+    /**
+     * @override
+     */
+    isMulticast(): boolean {
+        // IP Version 6 Addressing Architecture (2.7 Multicast Addresses)
+        // https://datatracker.ietf.org/doc/html/rfc4291#section-2.7
+        return this.octets[0] === 0xFF;
+    }
+
+    /**
+     * @override
+     */
+    isLinkLocalMulticast(): boolean {
+        // IPv6 Addressing Architecture (2.7.1. Pre-Defined Multicast Addresses)
+        // https://datatracker.ietf.org/doc/html/rfc4291#section-2.7.1
+        return this.octets[0] === 0xFF && ((this.octets[1] & 0x0F) === 0x02);
+    }
+
+    /**
+     * @override
+     */
+    isInterfaceLocalMulticast(): boolean {
+        // IPv6 Addressing Architecture (2.7.1. Pre-Defined Multicast Addresses)
+        // https://datatracker.ietf.org/doc/html/rfc4291#section-2.7.1
+        return this.octets[0] === 0xFF && ((this.octets[1] & 0x0F) === 0x01);
+    }
+
+    /**
+     * @override
+     */
+    isLinkLocalUnicast(): boolean {
+        // IP Version 6 Addressing Architecture (2.4 Address Type Identification)
+        // https://datatracker.ietf.org/doc/html/rfc4291#section-2.4
+        return ((this.octets[0] & 0xFF) === 0xFE) && ((this.octets[1] & 0xC0) === 0x80);
+    }
+
+    /**
+     * @override
+     */
+    isGlobalUnicast(): boolean {
+        // Returns true for addresses which fall outside of the current IANA-allocated
+        // 2000::/3 global unicast space, with the exception of the link-local address
+        // space.
+        //
+        // See also https://datatracker.ietf.org/doc/html/rfc4291#section-2.4
+        return !(this.isUnspecified() ||
+            this.isLoopback() ||
+            this.isMulticast() ||
+            this.isLinkLocalUnicast() ||
+            this.isPrivate());
+    }
+
+    /**
+     * @override
+     */
+    isDocumentation(): boolean {
+        return DOCUMENTATION_PREFIX.contains(this);
+    }
+
+    /**
+     * @override
+     */
+    isDiscard(): boolean {
+        return DISCARD_PREFIX.contains(this);
+    }
+
+    /**
+     * @override
+     */
+    isGlobalReachable(): boolean {
+        return this.isGlobalUnicast() && !(
+            this.isDocumentation() ||
+            this.isDiscard() ||
+            IPV4_MAPPED_PREFIX.contains(this) ||
+            IPV4_TRANSLATED_PREFIX.contains(this)
+        );
     }
 
     /**
@@ -529,7 +537,7 @@ export class Address6 implements Address {
      * @param address a textual address
      * @returns
      */
-    static isValid(address: string): boolean {
+    static validate(address: string): boolean {
         try {
             // eslint-disable-next-line no-new
             Address6.parse(address);
@@ -728,14 +736,14 @@ const UNSPECIFIED = newPrefix(Address6.parse("::"), 128);
 const LOOPBACK_PREFIX = newPrefix(Address6.parse("::1"), 128);
 
 /**
- * The link-local address prefix.
+ * The documentation address prefix.
  */
-const LINK_LOCAL_PREFIX = newPrefix(Address6.parse("fe80::"), 64);
+const DOCUMENTATION_PREFIX = newPrefix(Address6.parse("2001:db8::"), 32);
 
 /**
- * The multicast address prefix.
+ * The discard address prefix.
  */
-const MULTICAST_PREFIX = newPrefix(Address6.parse("ff00::"), 8);
+const DISCARD_PREFIX = newPrefix(Address6.parse("100::"), 64);
 
 /**
  * The first 6 16-bit fields of an IPv4-mapped IPv6 address.
@@ -767,7 +775,7 @@ const IPV4_TRANSLATED_PREFIX = newPrefix(Address6.parse("::ffff:0:0:0"), 96);
  * unicast address.
  *
  * The "IPv4-Compatible IPv6 address" is now deprecated because the current IPv6 transition mechanisms
- * no longer use these addresses.  New or updated implementations are not required to support this
+ * no longer use these addresses. New or updated implementations are not required to support this
  * address type.
  */
 const IPV4_COMPATIBLE_PREFIX = newPrefix(Address6.parse("::"), 96);

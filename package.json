@@ -1,6 +1,6 @@
 {
   "name": "@dnspect/ip-address-ts",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "description": "IP addresses library in TypeScript",
   "author": "Minghang Chen <chen@minghang.dev> (https://minghang.dev)",
   "license": "MIT",

@@ -26,11 +26,6 @@ export interface Address {
     zone(): string;
 
     /**
-     * Returns true if it is an unspecified address, false otherwise.
-     */
-    isUnspecified(): boolean;
-
-    /**
      * Returns the canonical text representation format of the address.
      */
     toString(): string;
@@ -64,4 +59,66 @@ export interface Address {
      * Returns a zero-padded base-2 string representation of the address
      */
     toBinaryString(): string;
+
+    /**
+     * Returns true if it is an unspecified address, false otherwise.
+     */
+    isUnspecified(): boolean;
+
+    /**
+     * Returns true if it is a loopback address.
+     */
+    isLoopback(): boolean;
+
+    /**
+     * Returns true if it is a private address, according to RFC 1918 (IPv4 addresses)
+     * and RFC 4193 (IPv6 addresses). That is, it reports whether ip is in 10.0.0.0/8,
+     * 172.16.0.0/12, 192.168.0.0/16, or fc00::/7.
+     */
+    isPrivate(): boolean;
+
+    /**
+     * Returns true if it is a multicast address.
+     */
+    isMulticast(): boolean;
+
+    /**
+     * Returns true if it is a link-local multicast address.
+     */
+    isLinkLocalMulticast(): boolean;
+
+    /**
+     * Returns true if it is an IPv6 interface-local multicast address.
+     */
+    isInterfaceLocalMulticast(): boolean;
+
+    /**
+     * Returns true if it is a link-local unicast address.
+     */
+    isLinkLocalUnicast(): boolean;
+
+    /**
+     * Returns true if it is a global unicast address.
+     */
+    isGlobalUnicast(): boolean;
+
+    /**
+     * Returns true if it is a documentation address.
+     *
+     * [RFC 5737: IPv4 Address Blocks Reserved for Documentation](https://datatracker.ietf.org/doc/html/rfc5737)
+     * [RFC 3849: IPv6 Address Prefix Reserved for Documentation](https://datatracker.ietf.org/doc/html/rfc3849)
+     */
+    isDocumentation(): boolean;
+
+    /**
+     * Returns true if it is a discard address.
+     *
+     * [RFC 6666: A Discard Prefix for IPv6](https://datatracker.ietf.org/doc/html/rfc6666)
+     */
+    isDiscard(): boolean;
+
+    /**
+     * Returns true if this address appears to be globally reachable.
+     */
+    isGlobalReachable(): boolean;
 }

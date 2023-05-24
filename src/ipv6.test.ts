@@ -214,3 +214,146 @@ describe("test isUnspecified()", () => {
         expect(Address6.parse("::1").isUnspecified()).to.false;
     });
 });
+
+describe("test isLoopback()", () => {
+    it("should be loopback", () => {
+        expect(Address6.parse("::1").isLoopback()).to.true;
+    });
+
+    it("should not be loopback", () => {
+        expect(Address6.parse("::").isLoopback()).to.false;
+        expect(Address6.parse("::2").isLoopback()).to.false;
+    });
+});
+
+describe("test isPrivate()", () => {
+    it("should be private", () => {
+        expect(Address6.parse("fc00::").isPrivate()).to.true;
+        expect(Address6.parse("fdff:ffff:ffff:ffff:ffff:ffff:ffff:ffff").isPrivate()).to.true;
+    });
+
+    it("should not be private", () => {
+        expect(Address6.parse("fbff:ffff:ffff:ffff:ffff:ffff:ffff:ffff").isPrivate()).to.false;
+        expect(Address6.parse("fe00::").isPrivate()).to.false;
+    });
+});
+
+describe("test isMulticast()", () => {
+    it("should be multicast", () => {
+        expect(Address6.parse("ff00::").isMulticast()).to.true;
+        expect(Address6.parse("ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff").isMulticast()).to.true;
+    });
+
+    it("should not be multicast", () => {
+        expect(Address6.parse("fe00::").isMulticast()).to.false;
+        expect(Address6.parse("feff:ffff:ffff:ffff:ffff:ffff:ffff:ffff").isMulticast()).to.false;
+    });
+});
+
+describe("test isLinkLocalMulticast()", () => {
+    it("should be linklocal multicast", () => {
+        expect(Address6.parse("ff02::").isLinkLocalMulticast()).to.true;
+        expect(Address6.parse("fff2::").isLinkLocalMulticast()).to.true;
+        expect(Address6.parse("fff2:ffff:ffff:ffff:ffff:ffff:ffff:ffff").isLinkLocalMulticast()).to.true;
+    });
+
+    it("should not be linklocal multicast", () => {
+        expect(Address6.parse("ff01:ffff:ffff:ffff:ffff:ffff:ffff:ffff").isLinkLocalMulticast()).to.false;
+        expect(Address6.parse("ff03::").isLinkLocalMulticast()).to.false;
+        expect(Address6.parse("fff1::").isLinkLocalMulticast()).to.false;
+        expect(Address6.parse("fff3::").isLinkLocalMulticast()).to.false;
+    });
+});
+
+describe("test isInterfaceLocalMulticast()", () => {
+    it("should be interface local multicast", () => {
+        expect(Address6.parse("ff01::").isInterfaceLocalMulticast()).to.true;
+        expect(Address6.parse("fff1::").isInterfaceLocalMulticast()).to.true;
+        expect(Address6.parse("fff1:ffff:ffff:ffff:ffff:ffff:ffff:ffff").isInterfaceLocalMulticast()).to.true;
+    });
+
+    it("should not be interface local multicast", () => {
+        expect(Address6.parse("ff00:ffff:ffff:ffff:ffff:ffff:ffff:ffff").isInterfaceLocalMulticast()).to.false;
+        expect(Address6.parse("ff02::").isInterfaceLocalMulticast()).to.false;
+        expect(Address6.parse("fff0::").isInterfaceLocalMulticast()).to.false;
+        expect(Address6.parse("fff2::").isInterfaceLocalMulticast()).to.false;
+    });
+});
+
+describe("test isLinkLocalUnicast()", () => {
+    it("should be linklocal unicast", () => {
+        expect(Address6.parse("fe80::").isLinkLocalUnicast()).to.true;
+        expect(Address6.parse("febf:ffff:ffff:ffff:ffff:ffff:ffff:ffff").isLinkLocalUnicast()).to.true;
+    });
+
+    it("should not be linklocal unicast", () => {
+        expect(Address6.parse("fe7f:ffff:ffff:ffff:ffff:ffff:ffff:ffff").isLinkLocalUnicast()).to.false;
+        expect(Address6.parse("fec0::").isLinkLocalUnicast()).to.false;
+    });
+});
+
+describe("test isGlobalUnicast()", () => {
+    it("should be global unicast", () => {
+        expect(Address6.parse("2001:db8::").isGlobalUnicast()).to.true;
+        expect(Address6.parse("100::").isGlobalUnicast()).to.true;
+    });
+
+    it("should not be global unicast", () => {
+        expect(Address6.parse("::").isGlobalUnicast()).to.false;
+        expect(Address6.parse("::1").isGlobalUnicast()).to.false;
+        expect(Address6.parse("::1").isGlobalUnicast()).to.false;
+        expect(Address6.parse("fc00::").isGlobalUnicast()).to.false;
+        expect(Address6.parse("fdff:ffff:ffff:ffff:ffff:ffff:ffff:ffff").isGlobalUnicast()).to.false;
+        expect(Address6.parse("fe80::").isGlobalUnicast()).to.false;
+        expect(Address6.parse("febf:ffff:ffff:ffff:ffff:ffff:ffff:ffff").isGlobalUnicast()).to.false;
+        expect(Address6.parse("ff00::").isGlobalUnicast()).to.false;
+        expect(Address6.parse("ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff").isGlobalUnicast()).to.false;
+    });
+});
+
+describe("test isDocumentation()", () => {
+    it("should be documentation", () => {
+        expect(Address6.parse("2001:db8::").isDocumentation()).to.true;
+        expect(Address6.parse("2001:db8:ffff:ffff:ffff:ffff:ffff:ffff").isDocumentation()).to.true;
+    });
+
+    it("should not be documentation", () => {
+        expect(Address6.parse("2001:db7:ffff:ffff:ffff:ffff:ffff:ffff").isDocumentation()).to.false;
+        expect(Address6.parse("2001:db9::").isDocumentation()).to.false;
+    });
+});
+
+describe("test isDiscard()", () => {
+    it("should be documentation", () => {
+        expect(Address6.parse("100::").isDiscard()).to.true;
+        expect(Address6.parse("100::ffff:ffff:ffff:ffff").isDiscard()).to.true;
+    });
+
+    it("should not be documentation", () => {
+        expect(Address6.parse("0ff:ffff:ffff:ffff:ffff:ffff:ffff:ffff").isDiscard()).to.false;
+        expect(Address6.parse("100::1:ffff:ffff:ffff:ffff").isDiscard()).to.false;
+    });
+});
+
+describe("test isGlobalReachable()", () => {
+    it("should be global reachable", () => {
+        expect(Address6.parse("2606:4700::").isGlobalReachable()).to.true;
+        expect(Address6.parse("2607:f8b0::").isGlobalReachable()).to.true;
+    });
+
+    it("should not be global reachable", () => {
+        expect(Address6.parse("::").isGlobalReachable()).to.false;
+        expect(Address6.parse("::1").isGlobalReachable()).to.false;
+        expect(Address6.parse("::1").isGlobalReachable()).to.false;
+        expect(Address6.parse("::ffff:0:0").isGlobalReachable()).to.false;
+        expect(Address6.parse("::ffff:0:0:0").isGlobalReachable()).to.false;
+        expect(Address6.parse("100::").isGlobalReachable()).to.false;
+        expect(Address6.parse("2001:db8::").isGlobalReachable()).to.false;
+        expect(Address6.parse("fc00::").isGlobalReachable()).to.false;
+        expect(Address6.parse("fdff:ffff:ffff:ffff:ffff:ffff:ffff:ffff").isGlobalReachable()).to.false;
+        expect(Address6.parse("fe80::").isGlobalUnicast()).to.false;
+        expect(Address6.parse("febf:ffff:ffff:ffff:ffff:ffff:ffff:ffff").isGlobalReachable()).to.false;
+        expect(Address6.parse("ff00::").isGlobalUnicast()).to.false;
+        expect(Address6.parse("ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff").isGlobalReachable()).to.false;
+    });
+});
